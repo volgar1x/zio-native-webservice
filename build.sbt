@@ -39,3 +39,6 @@ graalVMNativeImageOptions ++= Seq(
 )
 
 Compile / doc / sources := Seq.empty
+
+semanticdbEnabled := true
+semanticdbVersion := scalafixSemanticdb.revision
