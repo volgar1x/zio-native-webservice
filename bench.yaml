@@ -1,0 +1,12 @@
+---
+
+concurrency: 8
+base: 'http://localhost:8080'
+iterations: 100000
+rampup: 2
+
+plan:
+  - name: Greet
+    request:
+      url: /greet/john
+
