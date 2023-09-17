@@ -27,16 +27,8 @@ object MainApp extends ZIOAppDefault:
       _ <- ZIO.logInfo("Starting WebService...")
       _ <- (Server
         .install(
-          (httpApps @@ HttpAppMiddleware
-            .cors()).withDefaultErrorResponse @@ CustomMiddlewares.around {
-            (request, response, responseTime) =>
-              (
-                ZIO.logDebug(s"Completed in ${responseTime.toMillis()}ms")
-                  @@ CustomLog.status(response.status)
-                  @@ CustomLog.method(request.method)
-                  @@ CustomLog.location(request.url)
-              )
-          }
+          (httpApps @@ HttpAppMiddleware.cors()).withDefaultErrorResponse
+            @@ debugMiddleware
         )
         .flatMap { port => ZIO.logInfo(s"WebService started on port ${port}") }
         *> ZIO.never)
@@ -51,20 +43,26 @@ object MainApp extends ZIOAppDefault:
         )
     yield ExitCode.success
 
+  private val debugMiddleware = CustomMiddlewares.around {
+    (request, response, responseTime) =>
+      (
+        ZIO.logDebug(s"Completed in ${responseTime.toMillis()}ms")
+          @@ CustomLog.status(response.status)
+          @@ CustomLog.method(request.method)
+          @@ CustomLog.location(request.url)
+      )
+  }
+
   object CustomLog:
     import zio.logging.LogAnnotation
 
-    val status =
-      LogAnnotation[Status]("status", (a, b) => b, _.code.toString)
-    val method =
-      LogAnnotation[Method]("method", (a, b) => b, _.toString)
-    val location =
-      LogAnnotation[URL]("location", (a, b) => b, _.encode)
+    val status   = LogAnnotation[Status]("status", (a, b) => b, _.code.toString)
+    val method   = LogAnnotation[Method]("method", (a, b) => b, _.toString)
+    val location = LogAnnotation[URL]("location", (a, b) => b, _.encode)
 
   object CustomMiddlewares:
     def around[R, E, A](f: (Request, Response, Duration) => ZIO[R, E, A]) =
       new RequestHandlerMiddleware.Simple[R, E] {
-
         override def apply[Env <: R, Err >: E](
             handler: Handler[Env, Err, Request, Response]
         )(implicit trace: Trace): Handler[Env, Err, Request, Response] =
@@ -78,4 +76,3 @@ object MainApp extends ZIOAppDefault:
               .map(_._2)
           }
       }
-
