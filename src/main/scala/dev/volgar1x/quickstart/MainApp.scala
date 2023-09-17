@@ -11,16 +11,13 @@ import dev.volgar1x.quickstart.users.{
 import zio._
 import zio.http._
 import zio.logging._
-import zio.http.HttpAppMiddleware.HttpAppMiddlewareSyntax
-import zio.LogAnnotation
-import zio.http.RequestHandlerMiddleware.Simple
 
 object MainApp extends ZIOAppDefault:
   override val bootstrap: ZLayer[ZIOAppArgs, Any, Any] =
     Runtime.removeDefaultLoggers >>> consoleLogger(
       ConsoleLoggerConfig(
         LogFormat.default |-| LogFormat.allAnnotations,
-        LogFilter.logLevel(LogLevel.All)
+        LogFilter.logLevel(LogLevel.Info)
       )
     )
 

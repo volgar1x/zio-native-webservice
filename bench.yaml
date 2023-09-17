@@ -1,7 +1,7 @@
 ---
 
 concurrency: 8
-base: 'http://localhost:8080'
+base: 'http://192.168.1.31:8080'
 iterations: 100000
 rampup: 2
 
